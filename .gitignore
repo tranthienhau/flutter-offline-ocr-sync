@@ -1,0 +1,32 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.fvm/
+.fvmrc
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Generated
+*.g.dart
+*.freezed.dart
+
+# Firebase config files (committed in production after redaction)
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.env
