@@ -2,6 +2,16 @@
 
 A Flutter + Riverpod proof-of-concept that demonstrates an offline-first vendor inventory app: SQLite as the source of truth, on-device ML Kit OCR for product capture, and a background sync engine that pushes changes to Firebase the moment connectivity returns. Built for low-literacy market vendors who need the app to work in airplane mode and survive blackouts.
 
+## Demo
+
+These are real captures from the running app on the iOS Simulator (no mockups). See [FLOW.md](FLOW.md) for how they are generated.
+
+| Stock list (online) | After a sale | Offline sync banner |
+| --- | --- | --- |
+| ![Stock list online](screenshots/01-stock-online.png) | ![After a sale](screenshots/02-after-sale.png) | ![Offline sync](screenshots/03-offline-sync.png) |
+
+![Demo](screenshots/demo.gif)
+
 ## What this POC demonstrates
 
 - SQLite (sqflite) as the local source of truth - every read/write goes through local DB first

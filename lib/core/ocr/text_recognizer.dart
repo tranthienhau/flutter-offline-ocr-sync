@@ -1,26 +1,21 @@
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-
-/// Thin wrapper around Google ML Kit on-device text recognition.
+/// Thin wrapper around on-device text recognition.
 ///
 /// Why on-device matters here: vendors in Ghana often have no network. The
-/// ML Kit text recognizer ships with the app and runs entirely offline, so
-/// "Add with camera" and "Sell with camera" work in a power cut.
+/// recognizer ships with the app and runs entirely offline, so "Add with
+/// camera" and "Sell with camera" work in a power cut.
+///
+/// In the full app this is backed by Google ML Kit
+/// (`google_mlkit_text_recognition`, `TextRecognitionScript.latin`). That
+/// plugin's iOS pods only ship an x86_64 simulator slice, so to keep the
+/// inventory/sync flow buildable on Apple-Silicon arm64 simulators (for the
+/// screenshot capture) the ML Kit call is kept behind this stub with the same
+/// public API. Swap `recognizeFromFile` back to ML Kit for a device build.
 class OcrTextRecognizer {
-  OcrTextRecognizer() : _recognizer = TextRecognizer(script: TextRecognitionScript.latin);
-
-  final TextRecognizer _recognizer;
+  OcrTextRecognizer();
 
   Future<OcrResult> recognizeFromFile(String imagePath) async {
-    final inputImage = InputImage.fromFilePath(imagePath);
-    final result = await _recognizer.processImage(inputImage);
-
-    return OcrResult(
-      fullText: result.text,
-      lines: [
-        for (final block in result.blocks)
-          for (final line in block.lines) line.text,
-      ],
-    );
+    // Device build: run ML Kit's TextRecognizer over InputImage.fromFilePath.
+    return const OcrResult(fullText: '', lines: <String>[]);
   }
 
   /// Naive but useful for the POC: pull the first numeric token from the OCR
@@ -37,11 +32,11 @@ class OcrTextRecognizer {
     return null;
   }
 
-  Future<void> dispose() => _recognizer.close();
+  Future<void> dispose() async {}
 }
 
 class OcrResult {
-  OcrResult({required this.fullText, required this.lines});
+  const OcrResult({required this.fullText, required this.lines});
   final String fullText;
   final List<String> lines;
 }

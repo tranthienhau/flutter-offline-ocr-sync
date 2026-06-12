@@ -21,12 +21,30 @@ class InventoryController extends StateNotifier<List<Product>> {
     _refresh();
   }
 
-  final ProductDao _dao;
-  final SyncEngine _sync;
+  /// In-memory constructor used for tests/screenshots: seeds state directly and
+  /// keeps mutations local, so no SQLite/Firebase/connectivity plugin is needed.
+  InventoryController.seeded(List<Product> seed)
+      : _dao = null,
+        _sync = null,
+        super(seed);
+
+  final ProductDao? _dao;
+  final SyncEngine? _sync;
 
   Future<void> _refresh() async {
-    state = await _dao.all();
+    final dao = _dao;
+    if (dao == null) return;
+    state = await dao.all();
   }
+
+  Product _replace(Product p, {required int stock}) => Product(
+        id: p.id,
+        name: p.name,
+        unit: p.unit,
+        price: p.price,
+        stock: stock,
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      );
 
   Future<void> addProduct({
     required String name,
@@ -34,23 +52,54 @@ class InventoryController extends StateNotifier<List<Product>> {
     required double price,
     required int stock,
   }) async {
-    await _dao.insert(name: name, unit: unit, price: price, stock: stock);
+    final dao = _dao;
+    if (dao == null) {
+      state = [
+        Product(
+          id: 'mem-${DateTime.now().microsecondsSinceEpoch}',
+          name: name,
+          unit: unit,
+          price: price,
+          stock: stock,
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
+        ),
+        ...state,
+      ];
+      return;
+    }
+    await dao.insert(name: name, unit: unit, price: price, stock: stock);
     await _refresh();
     // Fire-and-forget: SyncEngine no-ops if already running.
-    unawaited(_sync.drain());
+    unawaited(_sync?.drain() ?? Future.value());
   }
 
   Future<void> sell(Product product) async {
     if (product.stock <= 0) return;
-    await _dao.updateStock(product, product.stock - 1);
+    final dao = _dao;
+    if (dao == null) {
+      state = [
+        for (final p in state)
+          if (p.id == product.id) _replace(p, stock: p.stock - 1) else p,
+      ];
+      return;
+    }
+    await dao.updateStock(product, product.stock - 1);
     await _refresh();
-    unawaited(_sync.drain());
+    unawaited(_sync?.drain() ?? Future.value());
   }
 
   Future<void> delete(Product product) async {
-    await _dao.softDelete(product);
+    final dao = _dao;
+    if (dao == null) {
+      state = [
+        for (final p in state)
+          if (p.id != product.id) p,
+      ];
+      return;
+    }
+    await dao.softDelete(product);
     await _refresh();
-    unawaited(_sync.drain());
+    unawaited(_sync?.drain() ?? Future.value());
   }
 }
 
