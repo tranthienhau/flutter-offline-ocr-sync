@@ -9,9 +9,11 @@ build/
 .fvm/
 .fvmrc
 
+# Regenerable native scaffold (recreate via `flutter create . --platforms=ios`)
+ios/
+
 # IDE
 .idea/
-.vscode/
 *.iml
 
 # Generated
@@ -30,3 +32,7 @@ Thumbs.db
 # Secrets
 .env
 *.env
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
